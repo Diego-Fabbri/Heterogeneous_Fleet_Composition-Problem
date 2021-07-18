@@ -87,21 +87,3 @@ if(condition == TRUE) {
 }else{
   print("Cost condition does not hold")
 }
-
-
-#Build Model
-Model <- MIPModel() %>%
-  add_variable(x[k, t], k= 1:m, t = 1:n, type = "binary") %>% #define variables
-  add_variable(y[k, t], k= 1:m, t = 1:n, type = "integer", lb = 0, ub = v_max[k]) %>%
-  add_variable(v[k], type = "integer", lb = 0, ub = v_max[k], k = 1:m) %>%
-  set_objective(sum_expr(N*cf[k]*v[k], k = 1:m) +
-                sum_expr(sum_expr(cv[k]*v_[t, k]*x[k, t], t = 1:n), k = 1:m) +
-                sum_expr(sum_expr(cv[k]*v[k] -cv[k]*y[k, t], t = 1:n), k = 1:m) + 
-                sum_expr(sum_expr(ch[k]*v_[t, k] -ch[k]*v_[t, k]*x[k, t] -ch[k]*v[k] + ch[k]*y[k, t], t = 1:n), k = 1:m),
-                "min") %>% #define objective
-  add_constraint(v[k] >= v_[t, k] -v_max[k] + v_max[k]*x[k, t], k= 1:m, t = 1:n) %>% #define constraints
-  add_constraint(v[k] <= v_[t, k] +v_max[k]*x[k, t], k= 1:m, t = 1:n) %>%
-  add_constraint(y[k, t] <= v_[t, k], k= 1:m, t = 1:n) %>%
-  add_constraint(y[k, t] <= v_max[k]*x[k, t], k= 1:m, t = 1:n) %>%
-  add_constraint(y[k, t] >= v[k] -v_max[k] + v_max[k]*x[k, t], k= 1:m, t = 1:n) %>%
-  solve_model(with_ROI(solver = "symphony", verbosity = 1))
